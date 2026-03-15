@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cotizador Profesional</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:      #00e5a0;
+      --accent-dim:  rgba(0,229,160,0.12);
+      --accent-ring: rgba(0,229,160,0.25);
+      --blue:        #4f8eff;
+      --blue-dim:    rgba(79,142,255,0.1);
+      --amber:       #f5a623;
+      --red:         #ff5c5c;
+      --bg:          #090b11;
+      --s1:          #0f1219;
+      --s2:          #161b26;
+      --s3:          #1e2333;
+      --border:      rgba(255,255,255,0.07);
+      --border-md:   rgba(255,255,255,0.12);
+      --text:        #edf0ff;
+      --muted:       #5f6480;
+      --muted2:      #8a90aa;
+      --font-h:      'Syne', sans-serif;
+      --font-b:      'DM Sans', sans-serif;
+      --r-sm:        10px;
+      --r-md:        14px;
+      --r-lg:        20px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-b);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background decorations ── */
+    .bg-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,255,0.025) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+    .glow { position: absolute; border-radius: 50%; filter: blur(130px); opacity: 0.15; }
+    .glow-1 { width: 700px; height: 700px; background: #00e5a0; top: -250px; right: -200px; }
+    .glow-2 { width: 600px; height: 600px; background: #4f8eff; bottom: -200px; left: -180px; }
+    .glow-3 { width: 300px; height: 300px; background: #f5a623; top: 40%; left: 40%; opacity: 0.06; }
+
+    /* ── Page ── */
+    .page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 2.5rem 1.25rem 6rem; }
+
+    /* ── Header ── */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.75rem; animation: fadeUp .6s ease both; flex-wrap: wrap; gap: 1rem; }
+    .header-left {}
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-dim); border: 1px solid var(--accent-ring);
+      border-radius: 100px; padding: 5px 14px; margin-bottom: 1rem;
+      font-size: 11px; font-weight: 600; color: var(--accent);
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s infinite; }
+    h1 {
+      font-family: var(--font-h); font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800; letter-spacing: -.025em; line-height: 1.1;
+      background: linear-gradient(130deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .subtitle { font-size: 14px; color: var(--muted2); margin-top: .5rem; font-weight: 300; }
+    .quote-num-box {
+      background: var(--s2); border: 1px solid var(--border-md); border-radius: var(--r-md);
+      padding: .75rem 1.25rem; text-align: right; flex-shrink: 0;
+    }
+    .quote-num-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .quote-num-val { font-family: var(--font-h); font-size: 1.5rem; font-weight: 700; color: var(--accent); margin-top: 2px; }
+    .quote-date { font-size: 12px; color: var(--muted2); margin-top: 3px; }
+
+    /* ── Section labels ── */
+    .section { margin-bottom: 1.5rem; animation: fadeUp .6s ease both; }
+    .section-label {
+      font-family: var(--font-h); font-size: 11px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+      display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent-dim); border: 1px solid var(--accent-ring);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    /* ── Grid ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* ── Form fields ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 12px; color: var(--muted2); letter-spacing: .03em; }
+    input[type=text], input[type=email], input[type=tel], input[type=number], textarea, select {
+      background: var(--s2); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font-b); font-size: 14px;
+      border-radius: var(--r-sm); padding: 11px 13px; outline: none;
+      transition: border-color .2s, background .2s;
+      width: 100%;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); background: var(--s3); }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6480' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 34px; }
+
+    /* ── Product catalog ── */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+    .product-card {
+      background: var(--s2); border: 1.5px solid var(--border);
+      border-radius: var(--r-md); padding: 1.25rem;
+      transition: border-color .2s, transform .15s;
+      cursor: default; position: relative; overflow: hidden;
+    }
+    .product-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--blue));
+      opacity: 0; transition: opacity .2s;
+    }
+    .product-card.active { border-color: var(--accent-ring); }
+    .product-card.active::before { opacity: 1; }
+    .product-card:hover { transform: translateY(-2px); }
+    .product-tag {
+      font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--blue); background: var(--blue-dim); border-radius: 100px;
+      padding: 3px 10px; display: inline-block; margin-bottom: .75rem;
+    }
+    .product-name { font-family: var(--font-h); font-size: 15px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+    .product-price { font-size: 20px; font-weight: 700; color: var(--accent); font-family: var(--font-h); }
+    .product-price span { font-size: 13px; font-weight: 400; color: var(--muted2); }
+    .qty-row { display: flex; align-items: center; gap: 10px; margin-top: 1rem; }
+    .qty-label { font-size: 12px; color: var(--muted); flex: 1; }
+    .qty-ctrl { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--s3); border: 1px solid var(--border-md);
+      color: var(--text); font-size: 16px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
+      line-height: 1;
+    }
+    .qty-btn:hover { background: var(--s1); border-color: var(--accent-ring); color: var(--accent); }
+    .qty-display { font-size: 15px; font-weight: 600; min-width: 24px; text-align: center; font-family: var(--font-h); }
+    .subtotal-chip {
+      margin-top: .75rem; font-size: 12px; color: var(--muted2);
+      border-top: 1px solid var(--border); padding-top: .75rem;
+      display: flex; justify-content: space-between;
+    }
+    .subtotal-chip strong { color: var(--text); }
+
+    /* ── Totals ── */
+    .totals-card {
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden;
+    }
+    .totals-body { padding: 1.5rem; }
+    .totals-extras { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width:560px) { .totals-extras { grid-template-columns: 1fr; } }
+    .total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .65rem; }
+    .total-row .lbl { font-size: 13px; color: var(--muted2); }
+    .total-row .val { font-size: 14px; font-weight: 500; font-family: var(--font-h); }
+    .total-row .val.green { color: var(--accent); }
+    .total-row .val.red { color: var(--red); }
+    .total-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    .grand-total-bar {
+      background: linear-gradient(135deg, rgba(0,229,160,.08), rgba(79,142,255,.05));
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem;
+    }
+    .grand-label { font-size: 13px; color: var(--muted2); }
+    .grand-val { font-family: var(--font-h); font-size: 2rem; font-weight: 800; color: var(--accent); }
+
+    /* ── IVA toggle ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .toggle-label { font-size: 13px; color: var(--text); }
+    .toggle-label small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; background: var(--s3); border-radius: 100px;
+      border: 1px solid var(--border-md); cursor: pointer; transition: background .2s;
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%; background: var(--muted);
+      transition: transform .2s, background .2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--accent-dim); border-color: var(--accent-ring); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); background: var(--accent); }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: .75rem; flex-wrap: wrap; padding: 1.5rem; border-top: 1px solid var(--border); }
+    .btn {
+      flex: 1; min-width: 180px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      border: none; border-radius: var(--r-sm); padding: 13px 20px;
+      font-family: var(--font-b); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: opacity .15s, transform .15s;
+    }
+    .btn:hover { opacity: .88; transform: translateY(-1px); }
+    .btn:active { transform: scale(.98); }
+    .btn-wa { background: linear-gradient(135deg, #25d366, #128c48); color: #fff; }
+    .btn-n8n { background: linear-gradient(135deg, #ff6b35, #e84d1b); color: #fff; }
+    .btn-n8n.loading { opacity: .6; pointer-events: none; }
+    .btn svg { flex-shrink: 0; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--s2); border: 1px solid var(--border-md);
+      border-radius: var(--r-md); padding: .85rem 1.5rem;
+      font-size: 14px; display: flex; align-items: center; gap: 10px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0; z-index: 999; white-space: nowrap;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--accent-ring); color: var(--accent); }
+    .toast.error   { border-color: rgba(255,92,92,.3); color: var(--red); }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); font-size: 14px; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: .3; }
+    }
+
+    .section:nth-child(1) { animation-delay: .05s; }
+    .section:nth-child(2) { animation-delay: .12s; }
+    .section:nth-child(3) { animation-delay: .19s; }
+    .section:nth-child(4) { animation-delay: .26s; }
+
+    /* ── Required asterisk ── */
+    .req { color: var(--accent); margin-left: 2px; }
+
+    /* ── Disclaimer ── */
+    footer { text-align: center; margin-top: 3rem; font-size: 11px; color: var(--muted); }
+
+    /* ── Webhook config notice ── */
+    .config-notice {
+      background: rgba(245,166,35,.06); border: 1px solid rgba(245,166,35,.2);
+      border-radius: var(--r-sm); padding: .75rem 1rem; margin-bottom: 1.5rem;
+      font-size: 12px; color: #c8882a; display: flex; align-items: flex-start; gap: 8px;
+    }
+    .config-notice b { color: var(--amber); }
+  </style>
+</head>
+<body>
+
+<div class="bg-wrap">
+  <div class="bg-grid"></div>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="glow glow-3"></div>
+</div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="badge"><span class="dot"></span>Sistema de cotización</div>
+      <h1>Cotizador Profesional</h1>
+      <p class="subtitle">Genera y envía cotizaciones en segundos</p>
+    </div>
+    <div class="quote-num-box">
+      <div class="quote-num-label">Cotización</div>
+      <div class="quote-num-val" id="quote-num">#0001</div>
+      <div class="quote-date" id="quote-date"></div>
+    </div>
+  </div>
+
+  <!-- Config notice -->
+  <div class="config-notice">
+    ⚙️ <span>Antes de publicar, reemplaza <b>TU_WEBHOOK_URL_N8N</b> en el script con la URL de tu webhook de n8n.</span>
+  </div>
+
+  <!-- STEP 1: Client data -->
+  <div class="section">
+    <div class="section-label"><span class="step-num">1</span> Datos del cliente</div>
+    <div class="card">
+      <div class="grid-2">
+        <div class="field">
+          <label>Nombre completo <span class="req">*</span></label>
+          <input type="text" id="c-name" placeholder="Ej. Juan García" required/>
+        </div>
+        <div class="field">
+          <label>Empresa / Negocio</label>
+          <input type="text" id="c-company" placeholder="Ej. Tech Solutions SA"/>
+        </div>
+        <div class="field">
+          <label>Correo electrónico <span class="req">*</span></label>
+          <input type="email" id="c-email" placeholder="correo@empresa.com" required/>
+        </div>
+        <div class="field">
+          <label>Teléfono / WhatsApp <span class="req">*</span></label>
+          <input type="tel" id="c-phone" placeholder="Ej. 4771234567" required/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Products -->
+  <div class="section">
+    <div class="section-label"><span class="step-num">2</span> Selecciona cursos</div>
+    <div class="products-grid" id="products-grid"></div>
+  </div>
+
+  <!-- STEP 3: Summary & extras -->
+  <div class="section">
+    <div class="section-label"><span class="step-num">3</span> Resumen y ajustes</div>
+    <div class="totals-card">
+      <div class="totals-body">
+
+        <div class="totals-extras">
+          <!-- Discount -->
+          <div class="field">
+            <label>Descuento (%)</label>
+            <input type="number" id="discount" value="0" min="0" max="100" step="1" placeholder="0" oninput="calcTotals()"/>
+          </div>
+          <!-- IVA toggle -->
+          <div class="field" style="justify-content:center;">
+            <label>IVA (16%)</label>
+            <div class="toggle-row" style="margin-top:6px;">
+              <div class="toggle-label">
+                Aplicar IVA
+                <small>Activa si tu cliente lo requiere</small>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="iva-toggle" onchange="calcTotals()"/>
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+          <!-- Notes -->
+          <div class="field full">
+            <label>Notas / comentarios adicionales</label>
+            <textarea id="notes" placeholder="Condiciones de pago, vigencia de la oferta, información adicional..."></textarea>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div id="line-items-empty" class="empty-state">
+          Agrega al menos un curso para ver el resumen
+        </div>
+        <div id="line-items" style="display:none;">
+          <div id="lines-list"></div>
+          <hr class="total-divider"/>
+          <div class="total-row">
+            <span class="lbl">Subtotal</span>
+            <span class="val" id="t-subtotal">$0</span>
+          </div>
+          <div class="total-row" id="row-discount" style="display:none;">
+            <span class="lbl">Descuento</span>
+            <span class="val red" id="t-discount">-$0</span>
+          </div>
+          <div class="total-row" id="row-iva" style="display:none;">
+            <span class="lbl">IVA (16%)</span>
+            <span class="val" id="t-iva">$0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grand-total-bar">
+        <span class="grand-label">Total de la cotización</span>
+        <span class="grand-val" id="t-grand">$0.00 MXN</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-n8n" id="btn-n8n" onclick="sendToN8n()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Enviar a n8n
+        </button>
+        <button class="btn btn-wa" onclick="shareWhatsApp()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.940 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.570-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.118.554 4.107 1.523 5.831L.057 23.885a.5.5 0 00.606.62l6.296-1.636A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.359-.214-3.721.967.993-3.604-.234-.371A9.818 9.818 0 1112 21.818z"/>
+          </svg>
+          Compartir por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Cotizador Profesional &mdash; Sistema interno de ventas</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ─── CONFIG ─────────────────────────────────────── */
+  const N8N_WEBHOOK = 'TU_WEBHOOK_URL_N8N'; // 👈 reemplaza con tu URL de n8n
+
+  const CATALOG = [
+    { id: 'n8n',  tag: 'Automatización', name: 'Curso de n8n',                price: 2000 },
+    { id: 'exia', tag: 'Productividad',  name: 'Curso Excel con IA',           price: 1800 },
+    { id: 'ia',   tag: 'Tecnología',     name: 'Curso de Inteligencia Artificial', price: 2000 },
+  ];
+
+  /* ─── STATE ──────────────────────────────────────── */
+  let qtys = {};
+  CATALOG.forEach(p => qtys[p.id] = 0);
+
+  /* ─── QUOTE NUMBER ───────────────────────────────── */
+  function initQuote() {
+    const stored = localStorage.getItem('lastQuoteNum');
+    const num = stored ? parseInt(stored) + 1 : 1;
+    localStorage.setItem('lastQuoteNum', num);
+    document.getElementById('quote-num').textContent = '#' + String(num).padStart(4, '0');
+    const now = new Date();
+    document.getElementById('quote-date').textContent =
+      now.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    return num;
+  }
+  const quoteNum = initQuote();
+
+  /* ─── RENDER CATALOG ─────────────────────────────── */
+  function renderCatalog() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = CATALOG.map(p => `
+      <div class="product-card" id="card-${p.id}">
+        <div class="product-tag">${p.tag}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">$${p.price.toLocaleString('es-MX')} <span>MXN</span></div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
+            <span class="qty-display" id="qty-${p.id}">0</span>
+            <button class="qty-btn" onclick="changeQty('${p.id}', 1)">+</button>
+          </div>
+        </div>
+        <div class="subtotal-chip">
+          <span>Subtotal</span>
+          <strong id="sub-${p.id}">$0</strong>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ─── QTY CONTROL ────────────────────────────────── */
+  function changeQty(id, delta) {
+    qtys[id] = Math.max(0, qtys[id] + delta);
+    document.getElementById('qty-' + id).textContent = qtys[id];
+    const p = CATALOG.find(x => x.id === id);
+    document.getElementById('sub-' + id).textContent =
+      '$' + (p.price * qtys[id]).toLocaleString('es-MX');
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('active', qtys[id] > 0);
+    calcTotals();
+  }
+
+  /* ─── TOTALS ─────────────────────────────────────── */
+  function fmt(n) { return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  function calcTotals() {
+    const lines = CATALOG.filter(p => qtys[p.id] > 0);
+    const empty = document.getElementById('line-items-empty');
+    const box   = document.getElementById('line-items');
+
+    if (lines.length === 0) {
+      empty.style.display = 'block';
+      box.style.display   = 'none';
+      document.getElementById('t-grand').textContent = '$0.00 MXN';
+      return;
+    }
+
+    empty.style.display = 'none';
+    box.style.display   = 'block';
+
+    const subtotal = lines.reduce((s, p) => s + p.price * qtys[p.id], 0);
+    const disc     = Math.min(100, Math.max(0, parseFloat(document.getElementById('discount').value) || 0));
+    const discAmt  = subtotal * (disc / 100);
+    const afterDisc = subtotal - discAmt;
+    const ivaOn    = document.getElementById('iva-toggle').checked;
+    const ivaAmt   = ivaOn ? afterDisc * 0.16 : 0;
+    const grand    = afterDisc + ivaAmt;
+
+    // line list
+    document.getElementById('lines-list').innerHTML = lines.map(p => `
+      <div class="total-row">
+        <span class="lbl">${p.name} ×${qtys[p.id]}</span>
+        <span class="val">$${(p.price * qtys[p.id]).toLocaleString('es-MX')}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('t-subtotal').textContent = fmt(subtotal);
+
+    const rowDisc = document.getElementById('row-discount');
+    rowDisc.style.display = disc > 0 ? 'flex' : 'none';
+    document.getElementById('t-discount').textContent = '-' + fmt(discAmt);
+
+    const rowIva = document.getElementById('row-iva');
+    rowIva.style.display = ivaOn ? 'flex' : 'none';
+    document.getElementById('t-iva').textContent = fmt(ivaAmt);
+
+    document.getElementById('t-grand').textContent = fmt(grand) + ' MXN';
+  }
+
+  /* ─── VALIDATION ─────────────────────────────────── */
+  function validate() {
+    const name  = document.getElementById('c-name').value.trim();
+    const email = document.getElementById('c-email').value.trim();
+    const phone = document.getElementById('c-phone').value.trim();
+    if (!name)  { toast('Por favor ingresa el nombre del cliente', 'error'); return false; }
+    if (!email) { toast('Por favor ingresa el correo electrónico', 'error'); return false; }
+    if (!phone) { toast('Por favor ingresa el teléfono', 'error'); return false; }
+    const hasItems = CATALOG.some(p => qtys[p.id] > 0);
+    if (!hasItems) { toast('Agrega al menos un curso a la cotización', 'error'); return false; }
+    return true;
+  }
+
+  /* ─── BUILD PAYLOAD ──────────────────────────────── */
+  function buildPayload() {
+    const lines  = CATALOG.filter(p => qtys[p.id] > 0);
+    const subtotal  = lines.reduce((s, p) => s + p.price * qtys[p.id], 0);
+    const disc      = parseFloat(document.getElementById('discount').value) || 0;
+    const discAmt   = subtotal * (disc / 100);
+    const afterDisc = subtotal - discAmt;
+    const ivaOn     = document.getElementById('iva-toggle').checked;
+    const ivaAmt    = ivaOn ? afterDisc * 0.16 : 0;
+    const grand     = afterDisc + ivaAmt;
+
+    return {
+      cotizacion: {
+        numero:   String(quoteNum).padStart(4, '0'),
+        fecha:    new Date().toISOString().split('T')[0],
+        folio:    '#' + String(quoteNum).padStart(4, '0'),
+      },
+      cliente: {
+        nombre:   document.getElementById('c-name').value.trim(),
+        empresa:  document.getElementById('c-company').value.trim(),
+        correo:   document.getElementById('c-email').value.trim(),
+        telefono: document.getElementById('c-phone').value.trim(),
+      },
+      productos: lines.map(p => ({
+        id:        p.id,
+        nombre:    p.name,
+        categoria: p.tag,
+        precio:    p.price,
+        cantidad:  qtys[p.id],
+        subtotal:  p.price * qtys[p.id],
+      })),
+      totales: {
+        subtotal:       Math.round(subtotal * 100) / 100,
+        descuento_pct:  disc,
+        descuento_monto: Math.round(discAmt * 100) / 100,
+        iva_aplicado:   ivaOn,
+        iva_monto:      Math.round(ivaAmt * 100) / 100,
+        total:          Math.round(grand * 100) / 100,
+      },
+      notas: document.getElementById('notes').value.trim(),
+    };
+  }
+
+  /* ─── SEND TO N8N ────────────────────────────────── */
+  async function sendToN8n() {
+    if (!validate()) return;
+    if (N8N_WEBHOOK === 'TU_WEBHOOK_URL_N8N') {
+      toast('Configura tu URL de webhook de n8n en el script', 'error');
+      return;
+    }
+    const btn = document.getElementById('btn-n8n');
+    btn.classList.add('loading');
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando...`;
+
+    try {
+      const payload = buildPayload();
+      const res = await fetch(N8N_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      toast('✓ Cotización enviada a n8n correctamente', 'success');
+    } catch (e) {
+      toast('Error al conectar con n8n: ' + e.message, 'error');
+    } finally {
+      btn.classList.remove('loading');
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Enviar a n8n`;
+    }
+  }
+
+  /* ─── WHATSAPP ───────────────────────────────────── */
+  function shareWhatsApp() {
+    if (!validate()) return;
+    const p = buildPayload();
+    const lines = p.productos.map(x =>
+      `  • ${x.nombre} ×${x.cantidad} — $${x.subtotal.toLocaleString('es-MX')}`
+    ).join('\n');
+
+    let msg =
+      `📋 *COTIZACIÓN ${p.cotizacion.folio}*\n` +
+      `📅 Fecha: ${new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' })}\n\n` +
+      `👤 *Cliente*\n` +
+      `Nombre: ${p.cliente.nombre}\n` +
+      (p.cliente.empresa ? `Empresa: ${p.cliente.empresa}\n` : '') +
+      `Correo: ${p.cliente.correo}\n` +
+      `Tel: ${p.cliente.telefono}\n\n` +
+      `🎓 *Cursos seleccionados*\n${lines}\n\n` +
+      `💰 *Resumen*\n` +
+      `Subtotal: $${p.totales.subtotal.toLocaleString('es-MX')}\n`;
+
+    if (p.totales.descuento_pct > 0)
+      msg += `Descuento (${p.totales.descuento_pct}%): -$${p.totales.descuento_monto.toLocaleString('es-MX')}\n`;
+    if (p.totales.iva_aplicado)
+      msg += `IVA (16%): $${p.totales.iva_monto.toLocaleString('es-MX')}\n`;
+
+    msg += `\n✅ *TOTAL: $${p.totales.total.toLocaleString('es-MX', {minimumFractionDigits:2})} MXN*`;
+
+    if (p.notas) msg += `\n\n📝 Notas: ${p.notas}`;
+
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }
+
+  /* ─── TOAST ──────────────────────────────────────── */
+  let toastTimer;
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast ' + type;
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  /* ─── INIT ───────────────────────────────────────── */
+  renderCatalog();
+  calcTotals();
+</script>
+</body>
+</html>
