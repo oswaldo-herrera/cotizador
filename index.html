@@ -424,13 +424,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const IS_PRODUCTION = window.location.hostname !== 'localhost';
-  const N8N_WEBHOOK = IS_PRODUCTION 
-  ? 'https://curson8n-n8n.cdpmwi.easypanel.host/webhook/cotizador'  
-  : 'https://curson8n-n8n.cdpmwi.easypanel.host/webhook-test/cotizador'; 
-
+  
   /* ─── CONFIG ─────────────────────────────────────── */
-  //const N8N_WEBHOOK = 'https://curson8n-n8n.cdpmwi.easypanel.host/webhook-test/cotizador'; // 👈 reemplaza con tu URL de n8n
+  const N8N_WEBHOOK = 'https://curson8n-n8n.cdpmwi.easypanel.host/webhook-test/cotizador'; // 👈 reemplaza con tu URL de n8n
 
   const CATALOG = [
     { id: 'n8n',  tag: 'Automatización', name: 'Curso de n8n',                price: 2000 },
